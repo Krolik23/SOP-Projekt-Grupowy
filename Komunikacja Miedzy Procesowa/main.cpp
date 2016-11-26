@@ -1,16 +1,7 @@
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <list>
-#include "Message.h"
-#include "PostOffice.h"
-
+#include <cstdio>
 
 int main()
 {
-	
-
-
 	getchar();
 	return 0;
 }

@@ -38,9 +38,9 @@ Message* PostOffice::receive(int postBoxOwnerPID)
 		throw NoPostBoxException();
 }
 
-void PostOffice::setPostBoxPartOwner(int postBoxOwnerPID, int postBoxPartOwnerPID)
+void PostOffice::setPostBoxPartOwner(int postBoxPartOwnerPID, int postBoxOwnerPID)
 {
-	if(true/*isPID_A_Child(int childCandidate, int parentPID)*/)
+	if(czyDziecko(postBoxPartOwnerPID,postBoxOwnerPID))
 	{
 		for (auto temp : blockOfPostBoxes)
 		{
