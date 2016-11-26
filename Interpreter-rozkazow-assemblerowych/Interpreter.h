@@ -165,7 +165,17 @@ public:
 			dysk.append_file(nazwa, rozsz, dane);
 		}
 
-		//wypisywanie kolejek procesów oczekujacych itd
+		if (operacja == "XW") { //pokaz wszystkie procesy
+			wypiszListe(list<PCB*>wszystkieProcesy);
+		}
+
+		if (operacja == "XG") { //pokaz gotowe procesy
+			wypiszListe(list<PCB*>gotoweProcesy);
+		}
+
+		if (operacja == "XO") { //pokaz oczekujace procesy
+			wypiszListe(list<PCB*>oczekujaceProcesy);
+		}
 
 		else if (operacja == "XC") { //utworzenie procesu
 			string rodzic = rozkaz.substr(3, 2);
@@ -178,12 +188,8 @@ public:
 				PID = (rodzic[0] - 48) * 10 + (rodzic[1] - 48);
 			}
 
-			/*struct_task* parent = nullptr;
-
-			if (PID==0)				parent = &INIT_TASK;
-			else				parent = znajdzproces(PID);
-
-			parent->fork();	*/
+			PCB* parent = getProcess(PID);
+			parent->fork();
 		}
 		else if (operacja == "XD") { //usuniecie procesu
 			string wartosc = rozkaz.substr(3, 2);
@@ -208,7 +214,12 @@ public:
 			else {
 				PID = (wartosc[0] - 48) * 10 + (wartosc[1] - 48);
 			}
-			//	znajdzproces(PID);
+			if (getProcess(PID) == nullptr) {
+				cout << endl << "Nie znaleziono procesu" << endl;
+			}
+			else {
+				cout << endl << "Proces znaleziono" << endl;
+			}
 		}
 		else if (operacja == "XR") { //czytanie komunikatu
 			PostOffice skrzynka;
@@ -254,7 +265,7 @@ public:
 		}
 		StanRejestrow();
 		ZapiszRejestry();
-		LicznikRozkazow = LicznikRozkazow + 1;
+		LicznikRozkazow = LicznikRozkazow + rozkaz.length();
 	}
 
 	string WczytajInstrukcje() {
