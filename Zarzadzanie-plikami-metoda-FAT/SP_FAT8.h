@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include <iomanip>
+#include <math.h>
 using namespace std;
 
 
@@ -29,7 +30,8 @@ string execute_file (string name, string ext); -----> Wykonanie rozkazów z pliku
 struct KATALOG
 {
 	string name;
-	bool status; //status wpisu
+	string ext;
+	bool status;
 	int first_jap;
 	int last_jap;
 	int size;
@@ -50,13 +52,14 @@ public:
 		dysk[1] = 'y'; // Wolne miejsce
 		dysk[2] = 'y'; //czy mozna dopisac katalog?
 
-		for (int i = 2; i <= 1028; i++)  //wypelnienie dysku 0
-			dysk[i] == 0;
+		for (int i = 3; i < 1028; i++)  //wypelnienie dysku 0
+			dysk[i] = 0;
 
-		for (int i = 1; i <= 32; i++) //Zwalnanie sektorów FAT
+		for (int i = 1; i < 32; i++) //Zwalnanie sektorów FAT
 			FATTable[i] = 0;
 
-		for (int i = 0; i <= 32; i++)
+
+		for (int i = 1; i < 32; i++)
 			katalog[i].status = 0;
 	}
 
@@ -68,13 +71,13 @@ public:
 		if (dysk[1] == 'y' && dysk[2] == 'y') {
 			temp = search_free_jap();
 			temp2 = free_catalog();
-
 			katalog[temp2].name = name;
 			katalog[temp2].status = 1;
 			katalog[temp2].first_jap = temp;
+			katalog[temp2].last_jap = temp;
+			katalog[temp2].ext = ext;
 			katalog[temp2].size = 0;
 			FATTable[temp] = -1;
-
 			cout << "Plik utworzony pomyslnie" << endl;;
 			calculate_free();
 		}
@@ -89,43 +92,45 @@ public:
 
 	void view_files()
 	{
-		cout << "Zawartosc katalogu glowego :" << endl;
 		cout << endl;
+		cout << "  Directory of root:" << endl;
 		cout << endl;
-		cout << " \t Name \t" << "Rozmiar \t" << endl;
+		cout << "\t" << "Name \t" << "Ext. \t" << "Size \t" << endl;
 		for (int i = 0; i <= 32; i++)
 			if (katalog[i].status == 1)
 			{
-				cout << "\t" << katalog[i].name << "\t" << "1" << endl;
+				cout << "\t" << katalog[i].name << "\t" << katalog[i].ext << "\t" << katalog[i].size << endl;
 			}
+		cout << endl;
 	}
 
 	void write_file(string name, string data, string ext)
 	{
 		int jap_pr;
 		int japnext;
-		int length;
-		int count_jap;
+		float length;
+		float count_jap;
 		int i;
 		int k;
 		int l;
 		length = data.length();
-		count_jap = length / 32;
-
+		new_size(name, ext, length);
+		count_jap = ceil(length / 32);
 		//SPRWADZ CZY PLIK JEST
-		if (file_jap(name) != 0) {
-			jap_pr = file_jap(name);
-			i = jap_pr * 32 + 1;
+		if (file_jap(name, ext) != 0) {
+			jap_pr = file_jap(name, ext);
+			i = jap_pr * 32;
 			k = 0;
 			l = i + 32;
 
 			//DLA PIERWSZEGO JAPA
 			for (i; i<l; i++) {
-				if (k <= length) {
+				if (k <= length - 1) {
 					dysk[i] = data[k];
 					k++;
 				}
 			}
+
 
 			//DLA WIECEJ JAPOW
 			if (count_jap>1) {
@@ -135,11 +140,11 @@ public:
 					FATTable[japnext] = -1;
 					FATTable[jap_pr] = japnext;
 					jap_pr = japnext;
-					i = japnext * 32 + 1;
+					i = japnext * 32;
 					l = i + 32;
 
 					for (i; i < l; i++) {
-						if (k <= length)
+						if (k <= length - 1)
 						{
 							dysk[i] = data[k];
 							k++;
@@ -148,53 +153,50 @@ public:
 				}
 			}
 		}
-		else cout << " B³¹d dopisywania plik nie istnieje" << endl;
+		else cout << " Blad dopisywania plik nie istnieje" << endl;
 
 	}
 
 
 	void delete_file(string name, string ext)
 	{
-		int firstjap = file_jap(name);
+
+		int firstjap = file_jap(name, ext);
 		int nextjap;
 		int l = 1;
+		int tab[32];
+		tab[0] = firstjap;
 
-		while (firstjap == -1)
+		while (firstjap != -1)
 		{
 			nextjap = FATTable[firstjap];
 			firstjap = nextjap;
+			tab[l] = nextjap;
 			l++;
 		}
-
-		firstjap = file_jap(name);
-		int *tablica = new int[l];
-
-		tablica[0] = firstjap;
-		for (int i = 1; i < l; i++) {
-			tablica[i] = FATTable[firstjap];
-			firstjap = tablica[i];
-		}
+		l = l - 1;
 
 
-		for (int i = 0; i <= l; i++)
+		for (int i = 0; i < l; i++)
 		{
-			int j = 32 * tablica[i];
+			int j = 32 * tab[i];
 			int k = j + 32;
-			for (j; j < 32; j++)
+			for (j; j < k; j++)
 			{
 				dysk[j] = 0;
 			}
-			FATTable[tablica[i]] = -1;
+			FATTable[tab[i]] = 0;
 		}
 
 		for (int i = 0; i < 32; i++)
 		{
-			if (katalog[i].name == name)
+			if (katalog[i].name == name && katalog[i].ext == ext)
 			{
 				katalog[i].name = "";
+				katalog[i].ext = "";
 				katalog[i].size = 0;
 				katalog[i].status = 0;
-				katalog[i].first_jap = -1;
+				katalog[i].first_jap = 0;
 			}
 		}
 
@@ -202,34 +204,29 @@ public:
 
 	void print_file(string name, string ext)
 	{
-		int firstjap = file_jap(name);
+		int firstjap = file_jap(name, ext);
 		int nextjap;
 		int l = 1;
+		int tab[32];
+		tab[0] = firstjap;
 
-		while (firstjap == -1)
+		while (firstjap != -1)
 		{
 			nextjap = FATTable[firstjap];
 			firstjap = nextjap;
+			tab[l] = nextjap;
 			l++;
 		}
-
-		firstjap = file_jap(name);
-		int *tablica = new int[l];
-
-		tablica[0] = firstjap;
-		for (int i = 1; i < l; i++) {
-			tablica[i] = FATTable[firstjap];
-			firstjap = tablica[i];
-		}
+		l = l - 1;
 
 
-		for (int i = 0; i <= l; i++)
+		for (int i = 0; i < l; i++)
 		{
-			int j = 32 * tablica[i];
+			int j = 32 * tab[i];
 			int k = j + 32;
-			for (j; j < 32; j++)
+			for (j; j < k; j++)
 			{
-				cout << dysk[j];
+				cout << dysk[j] << " ";
 			}
 		}
 
@@ -241,9 +238,10 @@ public:
 	{
 		for (int i = 0; i < 32; i++)
 		{
-			if (katalog[i].name == name)
+			if (katalog[i].name == name && katalog[i].ext == ext)
 			{
 				katalog[i].name = newname;
+				katalog[i].ext = newext;
 			}
 		}
 
@@ -251,23 +249,114 @@ public:
 
 	void append_file(string name, string ext, string data)
 	{
+		int firstjap = file_jap(name, ext);
+		new_size(name, ext, data.length());
+		int nextjap;
+		int lastjap;
+		int l;
+		int k;
+		int i;
+		int how;
+		float length;
+		int japnext;
+		float count_jap;
 
 
+
+		while (firstjap != -1)
+		{
+			nextjap = FATTable[firstjap];
+
+			if (nextjap == -1)
+			{
+				lastjap = firstjap;
+			}
+			firstjap = nextjap;
+		}
+
+
+		how = free_in_jap(lastjap);
+		length = data.length();
+		count_jap = ceil((length - how) / 32);
+
+		//WYPELNIAM STAREGO JAPA
+
+
+		i = (lastjap * 32) + (32 - how);
+		k = i + how;
+		l = 0;
+
+
+		for (i; i < k; i++) {
+			if (l < length)
+				dysk[i] = data[l];
+			l++;
+		}
+
+
+		if (length>how) {
+
+			for (int j = 1; j <= count_jap; j++) {
+				japnext = search_free_jap();
+				FATTable[japnext] = -1;
+				FATTable[lastjap] = japnext;
+				lastjap = japnext;
+				i = japnext * 32;
+				k = i + 32;
+
+				for (i; i < k; i++) {
+					if (l < length)
+					{
+
+						dysk[i] = data[l];
+						l++;
+					}
+				}
+			}
+		}
 
 	}
 
+
+
+
 	//MOJE WLASNE FUNKCJE
 
-	int file_jap(string name)
+	void new_size(string name, string ext, int size)
 	{
-		for (int i = 0; i <= 32; i++) {
-			if (katalog[i].name == name)
+		for (int i = 0; i < 32; i++) {
+			if (katalog[i].name == name && katalog[i].ext == ext) {
+				katalog[i].size += size;
+				katalog[0].size += size;
+			}
+		}
+	}
+
+
+
+	int file_jap(string name, string ext)
+	{
+		for (int i = 0; i < 32; i++) {
+			if (katalog[i].name == name && katalog[i].ext == ext)
 				return i;
 		}
 		return 0;
 	}
 
 
+	int free_in_jap(int nr_jap)
+	{
+		int i = nr_jap * 32;
+		int k = i + 32;
+		int l = 0;
+		for (i; i < k; i++)
+		{
+			if (dysk[i] == 0)
+				l++;
+		}
+
+		return l;
+	}
 
 
 	int jap_chain_free()
@@ -285,12 +374,14 @@ public:
 
 	int free_catalog()
 	{
-		for (int i = 0; i <= 32; i++)
+		for (int i = 0; i <= 32; i++) {
 			if (katalog[i].status == 0)
 			{
 				return i;
 			}
-			else return -1;
+		}
+
+		return 0;
 	}
 
 
@@ -314,12 +405,41 @@ public:
 	{
 		for (int i = 1; i < 32; i++)
 		{
-			if (FATTable[i] = 0);
-			return i;
+			if (FATTable[i] == 0)
+				return i;
 		}
 		return 0;
 	}
 
+	void stan_FAT()
+	{
+		string temp;
+		for (int i = 1; i < 32; i++)
+		{
+			cout << "Numer JAP : " << i << "/t STAN JAP :" << FATTable[i] << endl;
+
+		}
+	}
+
+	void print_drive()
+	{
+		for (int i = 0; i < 1028; i++) {
+			cout << dysk[i] << " ";
+		}
+	}
+
+	void print_to_file(string directory)
+	{
+		fstream plik(directory, ios::out);
+		{
+			for (int i = 0; i < 1028; i++) {
+				plik << i << " " << dysk[i] << endl;
+			}
+
+			plik.close();
+
+		}
+	}
 
 
 };
