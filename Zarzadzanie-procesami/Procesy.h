@@ -19,6 +19,8 @@ public:
 	int A, B, C;
 	int licznikRozkazow;
 	int ogrPam[2];
+
+	int timer;
 	//-----------------------
 	PCB();
 	~PCB();

@@ -34,6 +34,8 @@ int PCB::fork()
 
 	idPotomnych.push_back(nowy_proces->PID);	//DODANIE POTOMKA DO LISTY RODZICA
 
+	nowy_proces->timer = 0;
+
 	nowy_proces->A = 0;
 	nowy_proces->B = 0;
 	nowy_proces->C = 0;
@@ -110,6 +112,7 @@ bool PCB::exit()
 		{
 			PCB* Rodzicwsk = getProcess(this->idRodzica);
 			Rodzicwsk->Stan = PCB::stanProcesu::Gotowy;
+			gotoweProcesy.push_back(Rodzicwsk);
 
 			poWait.erase((poWait.begin() + indexSygnalu));
 
@@ -136,7 +139,7 @@ bool PCB::exit()
 
 bool czyDziecko(int PID, int czyRodzicID)
 {
-	PCB* temp;
+	PCB* temp = nullptr;
 	for (list<PCB*>::iterator iter = wszystkieProcesy.begin();
 		iter != wszystkieProcesy.end(); ++iter)
 	{
@@ -156,7 +159,7 @@ void zmienStan(int ID, PCB::stanProcesu nowyStan)
 {
 	for (list<PCB*>::iterator iter = wszystkieProcesy.begin(); iter != wszystkieProcesy.end(); ++iter)
 	{
-		if ((*iter)->PID == ID)
+		if ((*iter)->PID == ID) {
 			switch (nowyStan)
 			{
 			case PCB::stanProcesu::Aktywny:
@@ -297,11 +300,9 @@ void zmienStan(int ID, PCB::stanProcesu nowyStan)
 
 			default: break;
 			}
-		break;
-
+			break;
+		}
 	}
-
-
 }
 
 PCB * getProcess(int ID)
@@ -362,6 +363,7 @@ bool kill(int ID)
 			{
 				PCB *wskk = getProcess((*iter)->idRodzica);
 				wskk->Stan = PCB::stanProcesu::Gotowy;
+				gotoweProcesy.push_back(wskk);
 
 				poWait.erase((poWait.begin() + indexSygnalu));
 			}
