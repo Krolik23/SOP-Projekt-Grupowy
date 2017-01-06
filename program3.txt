@@ -1,0 +1,19 @@
+SP plik nr1 txt
+ZP plik nr1 txt to jest plik nr 1, nie plik nr 2
+CP plik nr1 txt
+SP plik nr2 txt
+ZP plik nr2 txt to jest plik nr 2,nie plik nr 1
+CP plik nr2 txt
+DP plik nr1 txt  dopisanie do pliku nr 1
+CP plik nr1 txt
+DP plik nr2 txt  dopisanie do pliku nr 2
+CP plik nr2 txt
+LP
+UP plik nr1 txt
+LP
+NP plik nr2 txt newfile1 txt
+DP newfile1 txt  drugie dopisanie do pliku nr 1
+CP newfile1 txt
+UP newfile1 txt
+LP
+EX

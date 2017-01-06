@@ -1,0 +1,17 @@
+XW
+XC 0 program1.txt
+XG
+XC 0 
+XC 0
+XC 1
+XC 2
+XN 2
+XN 6
+XW
+XP
+XG
+XD 2
+XD 4
+XW
+XP
+EX

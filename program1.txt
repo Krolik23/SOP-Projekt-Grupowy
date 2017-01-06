@@ -1,0 +1,16 @@
+MV A 30
+MV B 10
+MV C 300
+AD B
+ML B
+IC A
+IC C
+SB C
+DC C
+DV C
+JP 75
+IC A
+IC A
+IC A
+DC A
+EX
